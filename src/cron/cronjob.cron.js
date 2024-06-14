@@ -16,11 +16,16 @@ exports.checkMembershipFees = async () => {
           let totalAmount = membership.totalAmount;
           membership.addOns.forEach(addOn => totalAmount += addOn.monthlyAmount);
   
-          const receipt = `Total Amount: ${totalAmount}`;
+          const receipt = `<p>Dear ${membership.firstName},</p>
+                   <p>This is a reminder for your upcoming payment.</p>
+                   <p>Membership Type: ${membership.membershipType}</p>
+                   <p>Total Amount: N${membership.totalAmount}</p>
+                   <p>Invoice Link: <a href="${membership.invoiceLink}">${membership.invoiceLink}</a></p>`;
+                   
           await sendEmail({
             to: membership.email,
             subject: `Fitness+ Membership Reminder - ${membership.membershipType}`,
-            text: `Your membership is due soon. ${receipt}.`,
+            text: `${receipt}.`,
             attachments: [
               {
                 filename: 'receipt.txt',
@@ -37,12 +42,17 @@ exports.checkMembershipFees = async () => {
         let totalMonthlyAmount = 0;
         membership.addOns.forEach(addOn => totalMonthlyAmount += addOn.monthlyAmount);
   
-        const receipt = `Monthly Amount: ${totalMonthlyAmount}`;
+        const receipt = `<p>Dear ${membership.firstName},</p>
+                     <p>This is a reminder for your Monthly upcoming add-on service payment.</p>
+                     <p>Add-On Service: ${addOn.name}</p>
+                     <p>Monthly Amount: ${addOn.monthlyAmount}</p>
+                     <p>Invoice Link: <a href="${membership.invoiceLink}">${membership.invoiceLink}</a></p>`; 
+
         await sendEmail({
           from: process.env.EMAIL_USER,
           to: membership.email,
-          subject: `Fitness+ Monthly Service Reminder - ${membership.membershipType}`,
-          text: `Your monthly add-on service is due soon. ${receipt}.`,
+          subject: `Fitness+ Monthly Service Reminder - ${membership.membershipType}`, 
+          text: `${receipt}.`,
           attachments: [
             {
               filename: 'receipt.txt',

@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const referralCodeGenerator = require('referral-code-generator');
 
 const addOnSchema = new mongoose.Schema({
   name: {
@@ -16,7 +15,6 @@ const membershipSchema = new mongoose.Schema({
   membershipId: {
     type: String,
     unique: true,
-    default: referralCodeGenerator.custom('lowercase', 5, 5, 'PorchPlus')
  },
   firstName: {
     type: String,

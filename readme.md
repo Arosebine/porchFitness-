@@ -11,8 +11,8 @@
 
 # To run this project, you need to install all the dependencies and run the following commands:
 
-`npm install`
-`npm run dev`
+1. `npm install`
+2. `npm run dev`
 
 # `Github Link:` 
 the github link for this project is at:[porchplus Github link](https://github.com/Arosebine/porchFitness-.git)

@@ -1,10 +1,16 @@
 const sendEmail = require('../utils/sendEmail.utils');
+const User = require('../model/user.model');
 const { AddOn, Membership, Payment } = require('../model/member.model');
 const referralCodeGenerator = require('referral-code-generator');
 
 // Create a new membership
 exports.createMembership = async (req, res) => {
   try {
+    const { id } = req.user;
+    const user = await User.findById(id);
+    if (user.roles !== 'admin') {
+      return res.status(401).json({ message: "Unauthorized access, only admin can create membership" });
+    }
     const {
       firstName,
       lastName,
@@ -58,8 +64,13 @@ exports.createMembership = async (req, res) => {
 // pay for the monthly due and membership fee
 exports.paidMonthlyService = async (req, res) => {
   try {
-    const { id, addonId } = req.params;
-    const membership = await Membership.findById(id);
+    const { id } = req.user;
+    const user = await User.findById(id);
+    if (user.roles !== 'admin') {
+      return res.status(401).json({ message: "Unauthorized access, only admin can make membership payment" });
+    }
+    const { membershipId, addonId } = req.params;
+    const membership = await Membership.findById(membershipId);
     if (!membership) {
       return res.status(404).json({ message: "Membership not found" });
     }
@@ -113,9 +124,14 @@ exports.paidMonthlyService = async (req, res) => {
 
 exports.addAddonToMember = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.user;
+    const user = await User.findById(id);
+    if (user.roles !== 'admin') {
+      return res.status(401).json({ message: "Unauthorized access, only admin can make membership addon payment" });
+    }
+    const { membershipId } = req.params;
     const { addonName, monthlyAmount } = req.body;
-    const membership = await Membership.findById(id);
+    const membership = await Membership.findById(membershipId);
     if (!membership) {
       return res.status(404).json({ message: "Membership not found" });
     }
@@ -145,6 +161,11 @@ exports.addAddonToMember = async (req, res) => {
 
 exports.getMemberships = async (req, res) => {
     try {
+    const { id } = req.user;
+    const user = await User.findById(id);
+    if (user.roles !== 'admin') {
+      return res.status(401).json({ message: "Unauthorized access, only admin can view membership" });
+    }
         const memberships = await Membership.find();
         if (memberships.length === 0) {
             return res.status(404).json({ message: "Membership not found" });
@@ -157,12 +178,17 @@ exports.getMemberships = async (req, res) => {
 
 exports.getMembershipById = async (req, res) => {
     try {
-        const { id } = req.params;
-        const membership = await Membership.findById(id);
-        if (!membership) {
-            return res.status(404).json({ message: "Membership not found" });
-        }
-        return res.status(200).json({ message: "Membership fetched sucessfully",  membership });
+    const { id } = req.user;
+    const user = await User.findById(id);
+    if (user.roles !== 'admin') {
+      return res.status(401).json({ message: "Unauthorized access, only admin can make membership addon payment" });
+    }
+    const { membershipId } = req.params;
+    const membership = await Membership.findById(membershipId);
+    if (!membership) {
+        return res.status(404).json({ message: "Membership not found" });
+    }
+    return res.status(200).json({ message: "Membership fetched sucessfully",  membership });
     }catch(error) {
         return res.status(500).json({ message: "internal server error", error: error.message });
     }
@@ -170,7 +196,7 @@ exports.getMembershipById = async (req, res) => {
 
 exports.updateMembership = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { membershipId } = req.params;
         const {
             firstName,
             lastName,
@@ -180,11 +206,11 @@ exports.updateMembership = async (req, res) => {
             totalAmount,
             email,
         } = req.body;
-        const membership = await Membership.findById(id);
+        const membership = await Membership.findById(membershipId);
         if (!membership) {
             return res.status(404).json({ message: "Membership not found" });
         }
-        const updatedMembership = await Membership.findByIdAndUpdate(id, {
+        const updatedMembership = await Membership.findByIdAndUpdate(membershipId, {
             firstName,
             lastName,
             membershipType,
@@ -201,13 +227,18 @@ exports.updateMembership = async (req, res) => {
 
 exports.deleteMembership = async (req, res) => {
     try {
-        const { id } = req.params;
-        const membership = await Membership.findById(id);
-        if (!membership) {
-            return res.status(404).json({ message: "Membership not found" });
-        }
-        await Membership.findByIdAndDelete(id);
-        return res.status(200).json({ message: "Membership deleted sucessfully",  membership });
+    const { id } = req.user;
+    const user = await User.findById(id);
+    if (user.roles !== 'admin') {
+      return res.status(401).json({ message: "Unauthorized access, only admin can delete member " });
+    }
+    const { membershipId } = req.params;
+    const membership = await Membership.findById(membershipId);
+    if (!membership) {
+        return res.status(404).json({ message: "Membership not found" });
+    }
+    await Membership.findByIdAndDelete(membership._id);
+    return res.status(200).json({ message: "Membership deleted sucessfully",  membership });
     }catch(error) {
         return res.status(500).json({ message: "internal server error", error: error.message });
     }
@@ -216,23 +247,28 @@ exports.deleteMembership = async (req, res) => {
 
 exports.updateAddon = async (req, res) => {
     try {
-        const { id, addonId } = req.params;
+    const { id } = req.user;
+    const user = await User.findById(id);
+    if (user.roles !== 'admin') {
+      return res.status(401).json({ message: "Unauthorized access, only admin can update membership record " });
+    }
+    const { membershipId, addonId } = req.params;
 
-        const { addonName, monthlyAmount } = req.body;
+    const { addonName, monthlyAmount } = req.body;
 
-        const membership = await Membership.findById(id);
-        if (!membership) {
-            return res.status(404).json({ message: "Membership not found" });
-        }
-        const addOn = membership.addOns.id(addonId);
-        if (!addOn) {
-            return res.status(404).json({ message: "Add-on not found" });
-        }
-        addOn.addonName = addonName;
-        addOn.monthlyAmount = monthlyAmount;
-        await membership.save();
+    const membership = await Membership.findById(membershipId);
+    if (!membership) {
+        return res.status(404).json({ message: "Membership not found" });
+    }
+    const addOn = membership.addOns.id(addonId);
+    if (!addOn) {
+        return res.status(404).json({ message: "Add-on not found" });
+    }
+    addOn.addonName = addonName;
+    addOn.monthlyAmount = monthlyAmount;
+    await membership.save();
 
-        return res.status(200).json({ message: "Add-on updated successfully", membership });
+    return res.status(200).json({ message: "Add-on updated successfully", membership });
     } catch (error) {
         return res.status(500).json({ message: "Internal server error", error: error.message });
     }
@@ -245,14 +281,19 @@ exports.updateAddon = async (req, res) => {
 // Get all add-ons for a membership
 exports.getAllAddons = async (req, res) => {
   try {
-    const { id } = req.params;
-    const membership = await Membership.findById(id);
+    const { id } = req.user;
+    const user = await User.findById(id);
+    if (user.roles !== 'admin') {
+      return res.status(401).json({ message: "Unauthorized access, only admin can view membership's addons " });
+    }
+    const { membershipId } = req.params;
+    const membership = await Membership.findById(membershipId);
 
     if (!membership) {
       return res.status(404).json({ message: "Membership not found" });
     }
 
-    res.status(200).json(membership.addOns);
+    return res.status(200).json(membership.addOns);
   } catch (error) {
     res.status(500).json({ message: "Internal server error", error: error.message });
   }
@@ -261,8 +302,13 @@ exports.getAllAddons = async (req, res) => {
 // Get a single add-on by ID
 exports.getAddon = async (req, res) => {
   try {
-    const { id, addonId } = req.params;
-    const membership = await Membership.findById(id);
+    const { id } = req.user;
+    const user = await User.findById(id);
+    if (user.roles !== 'admin') {
+      return res.status(401).json({ message: "Unauthorized access, only admin can view membership's addons " });
+    }
+    const { membershipId, addonId } = req.params;
+    const membership = await Membership.findById(membershipId);
 
     if (!membership) {
       return res.status(404).json({ message: "Membership not found" });
@@ -283,8 +329,13 @@ exports.getAddon = async (req, res) => {
 // Delete an add-on by ID
 exports.deleteAddon = async (req, res) => {
   try {
-    const { id, addonId } = req.params;
-    const membership = await Membership.findById(id);
+    const { id } = req.user;
+    const user = await User.findById(id);
+    if (user.roles !== 'admin') {
+      return res.status(401).json({ message: "Unauthorized access, only admin can delete membership's addons " });
+    }
+    const { membershipId, addonId } = req.params;
+    const membership = await Membership.findById(membershipId);
 
     if (!membership) {
       return res.status(404).json({ message: "Membership not found" });
@@ -308,8 +359,13 @@ exports.deleteAddon = async (req, res) => {
 
 exports.renewAnnualMembership = async (req, res) => {
   try {
-    const { id } = req.params;
-    const membership = await Membership.findById(id);
+    const { id } = req.user;
+    const user = await User.findById(id);
+    if (user.roles !== 'admin') {
+      return res.status(401).json({ message: "Unauthorized access, only admin can renew member's annual membership " });
+    }
+    const {membershipId } = req.params;
+    const membership = await Membership.findById(membershipId);
 
     if (!membership) {
       return res.status(404).json({ message: "Membership not found" });
@@ -319,16 +375,21 @@ exports.renewAnnualMembership = async (req, res) => {
     const newDueDate = new Date(membership.dueDate);
     newDueDate.setFullYear(newDueDate.getFullYear() + 1);
 
-    const ANNUAL_BASIC_FEE = 500;
-    const ANNUAL_PREMIUM_FEE = 1000;
-
 
     // Update membership details
     membership.dueDate = newDueDate;
-    membership.totalAmount += membership.membershipType === 'Annual Basic' ? ANNUAL_BASIC_FEE : ANNUAL_PREMIUM_FEE;  // Assuming predefined fees
-    membership.isFirstMonth = false;  
+    membership.isFirstMonth = false;
+    await membership.save();
 
-    await membership.save();  // Save the updated membership
+    const paymentHistory = await Payment.create({
+      userId: membership._id,
+      membershipId: membership.membershipId,
+      paymentType: membership.membershipType,
+      amount: membership.totalAmount,
+      paidFor: membership.membershipType,
+      fullName: `${membership.firstName} ${membership.lastName}`,
+
+    })
 
     // Send renewal confirmation email
     const receipt = `<p>Dear ${membership.firstName},</p>
@@ -359,14 +420,18 @@ exports.renewAnnualMembership = async (req, res) => {
 
 exports.renewMonthlyMembership = async (req, res) => {
   try {
-    const { id } = req.params;
-    const membership = await Membership.findById(id);
+    const { id } = req.user;
+    const user = await User.findById(id);
+    if (user.roles !== 'admin') {
+      return res.status(401).json({ message: "Unauthorized access, only admin can renew member's monthly membership " });
+    }
+    const { membershipId } = req.params;
+    const membership = await Membership.findById(membershipId);
 
     if (!membership) {
       return res.status(404).json({ message: "Membership not found" });
     }
 
-    // Calculate the new due date for the next month
     const newDueDate = new Date(membership.dueDate);
     newDueDate.setMonth(newDueDate.getMonth() + 1);
 
@@ -376,7 +441,7 @@ exports.renewMonthlyMembership = async (req, res) => {
     const paymentHistory = await Payment.create({
       userId: membership._id,
       membershipId: membership.membershipId,
-      paymentType: 'Monthly Membership',
+      paymentType: membership.membershipType,
       amount: membership.totalAmount,
       paidFor: membership.membershipType,
       fullName: `${membership.firstName} ${membership.lastName}`,
@@ -416,8 +481,13 @@ exports.renewMonthlyMembership = async (req, res) => {
 
 exports.addonMonthlyPayment = async (req, res) => {
   try {
-    const { id, addonId } = req.params;
-    const membership = await Membership.findById(id);
+    const { id } = req.user;
+    const user = await User.findById(id);
+    if (user.roles !== 'admin') {
+      return res.status(401).json({ message: "Unauthorized access, only admin can renew member's monthly addons membership " });
+    }
+    const { membershipId, addonId } = req.params;
+    const membership = await Membership.findById(membershipId);
 
     if (!membership) {
       return res.status(404).json({ message: "Membership not found" });
@@ -435,7 +505,7 @@ exports.addonMonthlyPayment = async (req, res) => {
 
     addOn.isPaid = true;
     membership.totalAmount += addOn.monthlyAmount;
-    await membership.save(); 
+    await membership.save();
 
     const paymentHistory = await Payment.create({
       userId: membership._id,
@@ -473,8 +543,13 @@ exports.addonMonthlyPayment = async (req, res) => {
 
 exports.getPaymentHistoryById = async (req, res) => {
   try {
-    const { id } = req.params;
-    const membership = await Membership.findById(id);
+    const { id } = req.user;
+    const user = await User.findById(id);
+    if (user.roles !== 'admin') {
+      return res.status(401).json({ message: "Unauthorized access, only admin can view member's payment history" });
+    }
+    const { membershipId} = req.params;
+    const membership = await Membership.findById(membershipId);
     const paymentHistory = await Payment.find({ membershipId: membership.membershipId });
     return res.status(200).json({ message: "Payment history retrieved successfully", paymentHistory });
     } catch (error) {
@@ -485,6 +560,11 @@ exports.getPaymentHistoryById = async (req, res) => {
 
 exports.searchMembershipPaymentByName = async (req, res) => {
   try {
+    const { id } = req.user;
+    const user = await User.findById(id);
+    if(user.roles !== 'admin') {
+      return res.status(401).json({ message: "Unauthorized access, only admin can search member's payment history" });
+    }
     const { fullName } = req.params;
     const membership = await Payment.find({ fullName: new RegExp(fullName, "i") })
     if(membership.length === 0) {

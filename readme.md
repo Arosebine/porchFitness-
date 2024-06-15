@@ -26,10 +26,10 @@ The documentation for this project is at:[porchplus link](https://pypajlpgw4.api
 for the API endpoints, please refer to the documentation link above.
 
 # `Environment Variables:`
-`PORT=7090`
-`DATABASE_URL=mongodb+srv://handleBar:seyico09@handlebar.f04oun0.mongodb.net/`
-`DOMAIN=http://localhost:7090`
-`SMTP_HOST=smtp.gmail.com`
-`SMTP_PORT=465`
-`SMTP_EMAIL=arebine@gmail.com`
-`SMTP_PASSWORD=123456789`
+1. `PORT=7090`
+2. `DATABASE_URL=mongodb+srv://handleBar:seyico09@handlebar.f04oun0.mongodb.net/`
+3. `DOMAIN=http://localhost:7090`
+4. `SMTP_HOST=smtp.gmail.com`
+5. `SMTP_PORT=465`
+6. `SMTP_EMAIL=arebine@gmail.com`
+7. `SMTP_PASSWORD=123456789`

@@ -1,7 +1,11 @@
 const mongoose = require('mongoose');
 
 const addOnSchema = new mongoose.Schema({
-  name: {
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+  },
+  addonName: {
     type: String,
     required: true,
   },
@@ -9,7 +13,46 @@ const addOnSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  isPaid: {
+    type: Boolean,
+    default: false,
+  }
+},
+{
+  timestamps: true,
 });
+
+const paymentSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+  },
+  membershipId: {
+    type: String,
+    required: true,
+  },
+  paymentType: {
+    type: String,
+    required: true,
+  },
+  paidFor: {
+    type: String,
+    required: true,
+  },
+  amount: {
+    type: Number,
+    required: true,
+  },
+  fullName: {
+    type: String,
+    required: true,
+  },
+},
+{
+  timestamps: true,
+})
+
+
 
 const membershipSchema = new mongoose.Schema({
   membershipId: {
@@ -45,13 +88,20 @@ const membershipSchema = new mongoose.Schema({
   isFirstMonth: {
     type: Boolean,
     default: true
-},
-  invoiceLink: {
-    type: String,
-  },
+  },  
   addOns: [addOnSchema],
+},
+{
+  timestamps: true,
 });
 
 const Membership = mongoose.model('Membership', membershipSchema);
+const AddOn = mongoose.model('AddOn', addOnSchema);
+const Payment = mongoose.model('Payment', paymentSchema);
 
-module.exports = Membership;
+
+module.exports = {
+  Membership,
+  AddOn,
+  Payment,
+};

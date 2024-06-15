@@ -6,7 +6,7 @@ const bodyParser = require('body-parser');
 const cron = require('node-cron');
 const connectDB = require('./src/connection/porchdatabase');
 const membershipController = require('./src/cron/cronjob.cron');
-
+const memberRoutes = require('./src/routes/member.routes');
 
 const app = express();
 connectDB();
@@ -23,10 +23,11 @@ app.get('/', (req, res) => {
 });
 
 
-cron.schedule('0 0 * * *', async () => {
+cron.schedule('* * * * *', async () => {
     await membershipController.checkMembershipFees();
   });
 
+app.use('/api/v1/members', memberRoutes);
 
 app.listen(port, () => {
     console.log(`PorchPlus Server is running on port http://localhost:${port}`);

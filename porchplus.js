@@ -24,7 +24,7 @@ app.get('/', (req, res) => {
 });
 
 
-cron.schedule('* * * * *', async () => {
+cron.schedule('* * * * *', async () => { // every day by 12:00 AM
     await membershipController.checkMembershipFees();
   });
 

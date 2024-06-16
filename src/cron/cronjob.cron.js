@@ -1,5 +1,5 @@
-const Membership = require('../model/member.model');
 const sendEmail = require('../utils/sendEmail.utils');
+const { AddOn, Membership } = require('../model/member.model');
 
 
 exports.checkMembershipFees = async () => {
@@ -7,7 +7,7 @@ exports.checkMembershipFees = async () => {
   const memberships = await Membership.find({ dueDate: { $lte: today } });
 
   memberships.forEach(async (membership) => {
-    if (membership.isFirstMonth === false) {
+    if (membership.isFirstMonth == true) {
       // Send combined invoice for annual fee and first month's add-on services
       const reminderDate = new Date(membership.dueDate);
       reminderDate.setDate(reminderDate.getDate() - 7);
@@ -38,7 +38,7 @@ exports.checkMembershipFees = async () => {
       // Send monthly invoice for add-on services
       let totalMonthlyAmount = 0;
       const addOnReceipts = membership.addOns.map(addOn => {
-        if (addOn.isPaid === false) {
+        if (addOn.isPaid == false) {
           totalMonthlyAmount += addOn.monthlyAmount;
           return `<p>Add-On Service: ${addOn.addonName}</p>
                   <p>Monthly Amount: ${addOn.monthlyAmount}</p>`;

@@ -19,6 +19,6 @@ router.put('/memberships/:membershipId/renew', membershipController.renewMonthly
 router.put('/memberships/:membershipId/add-ons/:addonId/addon-renew', membershipController.addonMonthlyPayment); // addon monthly service
 router.get('/memberships/:membershipId/payments', membershipController.getPaymentHistoryById ); // Get all payments of a membership
 router.get('/memberships/:fullName/paymentHistory', membershipController.searchMembershipPaymentByName); // search for single or more payment of a membership
-
+router.put('/memberships/:membershipId/yearly-renew', membershipController.renewAnnualMembership); // addon monthly service
 
 module.exports = router;

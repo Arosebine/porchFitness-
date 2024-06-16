@@ -10,7 +10,7 @@ router.post("/signup", userController.signUp);
 router.post("/login", limiter, userController.userLogin);
 router.get("/emailVerify/:token", userController.emailVerify );
 router.post("/forgotpassword", userController.forgotPassword );
-router.post("/resetpassword",  userController.resetPassword );
+router.put("/resetpassword",  userController.resetPassword );
 
 
 

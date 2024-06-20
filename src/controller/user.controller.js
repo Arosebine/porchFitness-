@@ -200,6 +200,8 @@ exports.forgotPassword = async(req, res) => {
           const token = await Token.create({
              token: tokens,
              userId: existingUser._id,
+             type: "forgotpassword",
+             expires: Date.now() + 3600000
         });
         await sendEmail({
             email: existingUser.email,
@@ -241,25 +243,28 @@ exports.resetPassword = async(req, res) => {
                 message: 'Password cannot be empty'
             });
         };
-        const user = await Token.findOne({ token });
+        const user = await Token.findOne({ token, type: 'forgotpassword' });
+        if(user.expires < Date.now()){
+            return res.status(400).json({ message: 'The Otp has expired'});
+        }
         if (user) {
             const salt = await bcrypt.genSalt(10);
             const hashedPassword = await bcrypt.hash(password, salt);
-        const updatedUser = await User.findOneAndUpdate({_id: user.userId }, {
-            $set: {
-            password: hashedPassword,
+            const updatedUser = await User.findOneAndUpdate({_id: user.userId }, {
+                $set: {
+                    password: hashedPassword,
+                    }
+                }, { new: true });
+                await Token.findOneAndDelete({ token });
+                return res.status(200).json({
+                    message: 'Password reset successfully',
+                    updatedUser
+                });
+            }else{
+                return res.status(400).json({
+                    message: 'Token not valid'
+                });
             }
-        }, { new: true });
-        await Token.findOneAndDelete({ token });
-        return res.status(200).json({
-            message: 'Password reset successfully',
-            updatedUser
-        });
-      }else{
-        return res.status(400).json({
-            message: 'Token not valid'
-        });
-      }
     } catch (error) {
         return res.status(400).json({
             message: 'Error while resetting password',

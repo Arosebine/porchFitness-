@@ -88,7 +88,7 @@ const membershipSchema = new mongoose.Schema({
   isFirstMonth: {
     type: Boolean,
     default: true
-  },  
+  },
   addOns: [addOnSchema],
 },
 {

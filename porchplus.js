@@ -13,7 +13,6 @@ const app = express();
 connectDB();
 const port = process.env.PORT || 5000;
 
-
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -24,7 +23,7 @@ app.get('/', (req, res) => {
 });
 
 
-cron.schedule('0 * * * *', async () => { // every day by 12:00 AM
+cron.schedule('0 0 * * *', async () => { // every day by 12:00 AM
     await membershipController.checkMembershipFees();
   });
 

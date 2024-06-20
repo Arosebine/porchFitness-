@@ -11,6 +11,12 @@ const tokenSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     },
+    type: {
+        type: String,
+    },
+    expires: {
+        type: Date,
+    }
 });
 
 module.exports = mongoose.model('Token', tokenSchema);

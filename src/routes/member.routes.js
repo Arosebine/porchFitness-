@@ -5,7 +5,7 @@ const membershipController = require('../controller/member.controller');
 
 router.use(auth);
 router.post('/memberships', membershipController.createMembership);
-router.post('/memberships/:membershipId/add-ons', membershipController.addAddonToMember);
+router.post('/memberships/:membershipId/add-ons', membershipController.addAddonToMember); // add addons to a members
 router.get('/memberships', membershipController.getMemberships); // Get all memberships
 router.get('/memberships/:membershipId', membershipController.getMembershipById); // Get single membership
 router.put('/memberships/:membershipId', membershipController.updateMembership); // Update membership

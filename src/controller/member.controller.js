@@ -320,9 +320,9 @@ exports.getAddon = async (req, res) => {
       return res.status(404).json({ message: "Add-on not found" });
     }
 
-    res.status(200).json(addOn);
+    return res.status(200).json(addOn);
   } catch (error) {
-    res.status(500).json({ message: "Internal server error", error: error.message });
+    return res.status(500).json({ message: "Internal server error", error: error.message });
   }
 };
 
@@ -370,11 +370,13 @@ exports.renewAnnualMembership = async (req, res) => {
     if (!membership) {
       return res.status(404).json({ message: "Membership not found" });
     }
-
+    // check if membership has already been renewed through the updatedAt
+    if (membership.updatedAt.getFullYear() === new Date().getFullYear()) {
+      return res.status(400).json({ message: "Membership has already been renewed" });
+    }
     // Calculate the new due date for the next year
     const newDueDate = new Date(membership.dueDate);
     newDueDate.setFullYear(newDueDate.getFullYear() + 1);
-
 
     // Update membership details
     membership.dueDate = newDueDate;

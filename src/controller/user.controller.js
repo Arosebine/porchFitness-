@@ -73,12 +73,12 @@ exports.signUp = async (req, res) => {
           const isMatch = await User.findOne({ _id: user.userId });
           if(isMatch.isEmailActive === true) {
               return res.status(400).json({
-                  message: 'Your account is already verified'
+                  message: 'Your account is already verified, please login'
               });
           };
           const existingUser = await User.findOneAndUpdate(
-              { _id: isMatch._id}, 
-              { isEmailActive: true }, 
+              { _id: isMatch._id},
+              { isEmailActive: true },
               { new: true }
           );
           await sendEmail({
@@ -160,7 +160,7 @@ exports.updateStudentProfile = async(req, res) => {
         if (userStatus.roles === 'student' || userStatus.roles === 'admin' || userStatus.roles ==='superadmin') {
         const { firstName, lastName, phoneNumber, aboutMe } = req.body; 
         if(req.files){
-            const picture = req.files.picture;     
+            const picture = req.files.picture;
         const user = await User.findOneAndUpdate({ _id: userStatus._id }, {
             firstName,
             lastName,

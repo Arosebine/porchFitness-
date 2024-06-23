@@ -79,8 +79,8 @@ exports.paidMonthlyService = async (req, res) => {
     if (!addOn) {
       return res.status(404).json({ message: "Add-on not found" });
     }
-    if (addOn.isPaid === true) {
-      return res.status(409).json({ message: "Add-on and membership already paid" });
+    if (addOn.isPaid === true || membership.isFirstMonth === false) {
+      return res.status(409).json({ message: "The First Add-on and membership already paid" });
     }
     
     addOn.isPaid = true;
@@ -105,7 +105,7 @@ exports.paidMonthlyService = async (req, res) => {
 
     await sendEmail({
       email: membership.email,
-      subject: `Fitness+ Membership Payment - ${membership.membershipType}`,
+      subject: `First Fitness Addons + Membership Payment - ${membership.membershipType}`,
       message: receipt,
       attachments: [
         {

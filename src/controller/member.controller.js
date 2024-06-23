@@ -455,7 +455,7 @@ exports.renewMonthlyMembership = async (req, res) => {
     const receipt = `<p>Dear ${membership.firstName},</p>
                      <p>Your monthly membership has been renewed.</p>
                      <p>Membership Type: ${membership.membershipType}</p>
-                     <p>Monthly Amount: ${membership.monthlyAmount}</p>
+                     <p>Monthly Amount: ${membership.totalAmount}</p>
                      <p>Next Due Date: ${membership.dueDate.toDateString()}</p>
                      <p>Thanks You</p>`;
 

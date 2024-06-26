@@ -85,7 +85,7 @@ exports.paidMonthlyService = async (req, res) => {
     
     addOn.isPaid = true;
     membership.totalAmount += addOn.monthlyAmount;
-    membership.isFirstMonth = true;
+    membership.isFirstMonth = false;
     await membership.save();
     await addOn.save();
     const paymentHistory = await Payment.create({

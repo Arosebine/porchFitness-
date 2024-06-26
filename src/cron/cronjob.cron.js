@@ -7,8 +7,7 @@ exports.checkMembershipFees = async () => {
   const memberships = await Membership.find({ dueDate: { $lte: today } });
 
   memberships.forEach(async (membership) => {
-    if (membership.isFirstMonth == true) {
-      // Send combined invoice for annual fee and first month's add-on services
+    if (membership.isFirstMonth == false) {
       const reminderDate = new Date(membership.dueDate);
       reminderDate.setDate(reminderDate.getDate() - 7);
 
@@ -35,7 +34,6 @@ exports.checkMembershipFees = async () => {
 
       }
     } else {
-      // Send monthly invoice for add-on services
       let totalMonthlyAmount = 0;
       const addOnReceipts = membership.addOns.map(addOn => {
         if (addOn.isPaid == false) {

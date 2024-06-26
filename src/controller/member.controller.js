@@ -4,13 +4,15 @@ const { AddOn, Membership, Payment } = require('../model/member.model');
 const referralCodeGenerator = require('referral-code-generator');
 
 // Create a new membership
-exports.createMembership = async (req, res) => {
+exports.createMembership = async (req, res, next) => {
   try {
     const { id } = req.user;
     const user = await User.findById(id);
+
     if (user.roles !== 'admin') {
       return res.status(401).json({ message: "Unauthorized access, only admin can create membership" });
     }
+
     const {
       firstName,
       lastName,
@@ -20,11 +22,14 @@ exports.createMembership = async (req, res) => {
       totalAmount,
       email,
     } = req.body;
+
     const membershipId = referralCodeGenerator.custom('lowercase', 5, 5, 'PorchPlus');
     const existingMembership = await Membership.findOne({ email: email });
+
     if (existingMembership) {
       return res.status(409).json({ message: "Membership already exists" });
     }
+
     const membership = await Membership.create({
       firstName,
       lastName,
@@ -35,31 +40,33 @@ exports.createMembership = async (req, res) => {
       totalAmount,
       email,
     });
+
     await sendEmail({
       email: email,
       subject: `Fitness+ Membership Confirmation - ${membership.membershipType}`,
       message: `<p>Dear ${membership.firstName},</p>
                 <p>Thank you for signing up for a ${membership.membershipType} membership with PorchPlus.</p>
                 <p>Your membership ID is: ${membership.membershipId}</p>
-                <p> Your monthly due: ${membership.totalAmount}`,
-                attachments: [
-                  {
-                    filename: 'confirmation.pdf',
-                    content: `<p>Dear ${membership.firstName},</p>
-                              <p>Thank you for signing up for a ${membership.membershipType} membership with PorchPlus.</p>
-                              <p>Your membership ID is: ${membership.membershipId}</p>
-                              <p>Your monthly due: ${membership.totalAmount}</p>
-                              <p>Your start date: ${membership.startDate}</p>
-                              <p>Your due date: ${membership.dueDate}</p>`,
-                  },
-                ]
-              })
+                <p>Your monthly due: ${membership.totalAmount}</p>`,
+      attachments: [
+        {
+          filename: 'confirmation.pdf',
+          content: `<p>Dear ${membership.firstName},</p>
+                    <p>Thank you for signing up for a ${membership.membershipType} membership with PorchPlus.</p>
+                    <p>Your membership ID is: ${membership.membershipId}</p>
+                    <p>Your monthly due: ${membership.totalAmount}</p>
+                    <p>Your start date: ${membership.startDate}</p>
+                    <p>Your due date: ${membership.dueDate}</p>`,
+        },
+      ]
+    });
+
     return res.status(201).json(membership);
   } catch (error) {
-    return res.status(500).json({ message: "internal server error",
-        error: error.message });
+    next(error);
   }
 };
+
 
 // pay for the monthly due and membership fee
 exports.paidMonthlyService = async (req, res) => {
@@ -122,7 +129,7 @@ exports.paidMonthlyService = async (req, res) => {
 
 
 
-exports.addAddonToMember = async (req, res) => {
+exports.addAddonToMember = async (req, res, next) => {
   try {
     const { id } = req.user;
     const user = await User.findById(id);

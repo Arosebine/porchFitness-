@@ -20,7 +20,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(helmet());
 
 app.get('/', (req, res) => {
-    res.send('Hello Porch Plus Fitness');
+    res.send('Hello Porch Plus Fitness'); 
 });
 
 
